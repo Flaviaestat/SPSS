@@ -1,0 +1,379 @@
+
+
+*************************************.
+***** Comandos do SPSS *****.
+*************************************.
+
+GET FILE='G:\Disco_V\DBM\Demandas Ad-hoc Empresarial\Velox\21032005\Empresarial_Velox_21032005.SAV'.
+
+*************************************.
+CRUZANDO COM A INAD.
+*************************************
+
+MATCH FILES
+/FILE=*
+/TABLE='H:\Disco_X\BASES\Inadimplência\2005_09_05\inad_TOTAL_20050905_NRCOP.SAV'
+/BY nrcop.
+
+SORT CASES BY nrcassoc.
+
+RECODE ina05set  (SYSMIS=0).
+
+**************************************************************
+COLOCANDO NO FORMATO DE SMS.
+***********************************************************
+
+STRING msis(A100).
+COMPUTE msis=CONCAT('55',LTRIM(STRING(ddd,f2)),LTRIM(STRING(cel,f8))).
+EXE.
+
+*******************************************************************
+SORT CASES BY Cidade.
+*******************************************************
+
+RENAME VARIABLES (razao = nome).
+
+*************************************.
+CRIAR SEQUENCIA DE NUMEROS NA PRIMEIRA COLUNA.
+************************************************************************
+COMPUTE cont=$CASENUM.
+
+*************************************.
+SELECIONAR 8750 CASOS DE UMA BASE DE 142625
+*************************************************************
+
+FILTER OFF.
+USE ALL.
+SAMPLE 8750 from  142265.
+EXECUTE .
+
+
+********************************************
+SELECT IF (contador<=100000).
+
+*************************************.
+
+COMPUTE  pre_atu=trunc(tel/10000).
+
+*************************************.
+
+AGGREGATE OUTFILE=*
+/PRESORTED
+/BREAK=nrcop
+/uf=FIRST(uf)
+/minutos=SUM(minutos)
+/velox=MAX(velox).
+EXECUTE.
+
+OU
+
+
+AGGREGATE OUTFILE=*
+/PRESORTED
+/BREAK = doc
+/N=N.
+
+*************************************.
+
+COMPUTE ddd=0.
+EXECUTE.
+
+*************************************.
+
+MATCH FILES
+/FILE=*
+/TABLE='H:\Disco_X\BASES\Cobertura Oi\cobertura_atualizado1204.sav'
+/BY Cidade.
+EXECUTE.
+
+*************************************.
+
+SAVE OUTFILE='G:\Disco_V\DBM\Demandas Ad-hoc Empresarial\Velox\21032005\Empresarial_Velox_21032005_abaixo10meses.SAV'
+/COMPRESSED.
+
+SAVE TRANSLATE
+  OUTFILE='G:\DISCO_V\DBM\Demandas Ad-hoc Empresarial\VELOX + OI\23032005\Mailing_velox+oi_20050323.txt'
+  /KEEP DDD TEL NOME UF NRCOP EST GRA CENTRAL DOC TP_DOC DIAS_ATR CEP BAIRRO CID G_PROP PRI_NOME OPERAD SEGMENTO DT_CARGA DDD_1
+  /TYPE=TAB /MAP /REPLACE /FIELDNAMES.
+
+
+** CRIAR VARIÁVEL STRING EM FUNÇÃO DE UMA NUMÉRICA.
+
+STRING var2 (A7).
+COMPUTE var2 = STRING(var1,F7) .
+
+** CRIAR VARIÁVEL STRING EM FUNÇÃO DE OUTRA STRING.
+
+string var3 (A4).
+COMPUTE var3 =SUBSTR(var2,3,4).
+
+** CRIAR VARIÁVEL NUMERICA EM FUNÇÃO DE UMA STRING.
+
+COMPUTE var4=NUMBER(var3,F4.0).
+
+** TRUNCAR VARIÁVEL NUMERICA.
+
+COMPUTE  var5=TRUNC(var1/10000).
+
+** CRIAR VARIÁVEL NUMERICA EM FUNÇÃO DE UMA STRING MENOR.
+
+COMPUTE var6=NUMERIC(SUBSTR(var3,7,4),F8.0).
+
+** CRIAR VARIÁVEL NUMERICA EM FUNÇÃO DE UMA STRING MENOR.
+
+COMPUTE var4=NUMBER(SUBSTR(STRING(DOC,F11),1,8),F8).
+
+** CRIAR VARIÁVEL NUMERICA EM FUNÇÃO DE OUTRAS NUMERICAS.
+
+cmpute var10=(var7*10000) + (var8*100) + var9.
+
+** CRIAR VARIÁVEL STRING EM FUNÇÃO DE OUTRAS STRING.
+
+STRING var11 (A13).
+COMPUTE var11 = CONCAT(var2,var3) .
+
+** CRIAR UM FALG EM CIMA DE ALGUMA CONDIÇÃO.
+
+COMPUTE FLAG=(VAR <1).
+
+** CRIAR VARIÁVEL EM FUNÇÃO DE UMA VAR QUE TEM MISSING .
+
+IF (SYSMIS(ddd)) tt = 1 .
+IF (MISSING(ddd)) tt = 1 .
+
+** CRIAR CONTADOR PARA TODAS AS COMBINAÇÕES DE 2 OU MAIS VARIÁVEIS.
+
+COMPUTE count = 1.
+IF (var12 = lag(var12)  & var13 = lag(var13) ) count = SUM (count, lag(count)).
+
+** SELECIONAR AMOSTRA ALEATÓRIA - numero exato.
+
+SAMPLE 50 FROM 1000.
+
+** SELECIONAR AMOSTRA ALEATÓRIA - percentual da base.
+
+SAMPLE .10.
+EXECUTE .
+
+** SELECIONAR AMOSTRA ORDENADA.
+filter off.
+use  1 thru  100 /permanent .
+EXECUTE .
+
+** SELECIONAR ATRAVÉS DE UMA CONDIÇÃO.
+
+SELECT IF(VAR1= 1).
+EXECUTE .
+
+SELECT IF(NOT(UF ='AL')).
+EXECUTE .
+
+** FILTRAR POR UM FLAG.
+
+FILTER BY F_COBER.
+EXECUTE .
+
+** DESLIGAR O FILTRO.
+
+USE ALL.
+FILTER OFF.
+
+** MUDAR O FORMATO DE UMA VAR NUMÉRICA.
+
+FORMAT VAR (f1.0).
+
+** CRIAR NÚMERO ALEATÓRIO.
+
+COMPUTE aleato=uniform(1).
+
+** SELECIONAR 10% DA BASE.
+
+SELECT IF(uniform(1)<=.10).
+
+** NUMERAR OS CASOS DA BASE.
+
+COMPUTE n=$casenum.
+
+** SPLIT FILE.
+
+SORT CASES BY UF.
+SPLIT FILE 
+  LAYERED BY uf .
+
+SPLIT FILE
+  SEPARATE BY uf .
+
+** CRIAR UM BANCO DE DADOS.
+
+DATA LIST LIST 
+/var1 var2 var3 varn. 
+BEGIN DATA 
+1 2 3 4 
+1 1 1 1 
+1 1 2 4 
+2 3 2 2
+ .1 . 1 
+END DATA. 
+LIST. 
+
+
+** CRIAR UMA VARIÁVEL STRING EM FUNÇÃO DE 2 NUMERICAS.
+
+STRING TEL1 (A13).
+COMPUTE TEL1 = CONCAT(STRING(DDD,F2), LTRIM(STRING(TEL,F8))).
+execute.
+
+** CRIAR UMA VARIÁVEL NUMERICA EM FUNÇÃO DE 2 NUMERICAS.
+
+COMPUTE TEL2 = NUMBER(CONCAT(STRING(DDD,F2), LTRIM(STRING(TEL,F8))),F10.0).
+execute.
+
+** SE O CONTEUDO DE 2 VARIÁVEIS SÃO IGUAIS.
+
+COMPUTE D3 = ANY(ddd1,ddd2) .
+
+*Resultado:*.
+* SE ddd1 = ddd2 => d3 =1.
+* SE ddd1 ne ddd2 => d3 =0.
+
+** CRIA FLAG DE VALORES MISSING na VAR.
+
+COUNT  missing = var1  (SYSMIS)  .
+
+
+** COMANDO MATCH - adicionar variáveis dos Bases 2 e 3 no Base 1.
+
+* Condições necessárias:
+- Base 1 deve estar ordenada por DOM;
+- Bases 2 e 3 deve estar ordenadas e agregadas por DOM.
+
+MATCH FILES
+/FILE='D:\Exemplo\Base_para_Mailing_amostra.sav' ==> Base 1: Base na qual vamos marcar as variáveis.
+/TABLE='D:\Exemplo\inad_20050328_DOM.SAV' ====> Base 2: Base que contém variáveis que precisa ser maracada no Banco1.
+/in=base2 ================================> Flag de identificação de quem estava na Base 2.
+/TABLE='D:\Exemplo\Mapa_Velox_07_03_05.sav'====> Base 3: Base que contém variáveis que precisa ser maracada no Banco1.
+/in=base3 ================================> Flag de identificação de quem estava na Base 3.
+/BY dom =================================> Chave para marcação (comum nas 3 bases).
+/map ====================================> Serve para listar as variáveis dos bancos (1, 2 e 3).
+/keep dom ddd tel ina28mar mve_mar. ============> Variáveis selecionadas para o banco final (Base 1 marcada)
+EXECUTE.
+
+** COMANDO MATCH - adicionar VARIÁVEIS dos Bases 1, 2 e 3 em um único banco.
+
+* Condições necessárias:
+- Bases 1, 2 e 3 deve estar ordenadas e agregadas por DOM.
+
+MATCH FILES
+/FILE='D:\Exemplo\Base_para_Mailing_amostra.sav' ==> Base 1: Base na qual vamos marcar as variáveis.
+/in=base1 =================================> Flag de identificação de quem estava na Base 1.
+/FILE='D:\Exemplo\inad_20050328_DOM.SAV' ======> Base 2: Base que contém variáveis que precisa ser maracada no Banco1.
+/in=base2 =================================> Flag de identificação de quem estava na Base 2.
+/FILE='D:\Exemplo\Mapa_Velox_07_03_05.sav'======> Base 3: Base que contém variáveis que precisa ser maracada no Banco1.
+/in=base3 =================================> Flag de identificação de quem estava na Base 3.
+/BY dom =================================> Chave para marcação (comum nas 3 bases).
+/map ====================================> Serve para listar as variáveis dos bancos (1, 2 e 3).
+/keep dom ddd tel ina28mar mve_mar. ============> Variáveis selecionadas para o banco final (Base 1 marcada)
+EXECUTE.
+
+** COMANDO ADD - adicionar CASOS dos Bases 1, 2 e 3 em um único banco.
+
+* Condições necessárias:
+- Bases 1, 2 e 3 deve estar ordenadas e agregadas por DOM.
+
+ADD FILES
+/FILE='D:\Exemplo\Base_para_Mailing_amostra.sav' ==> Base 1: Base na qual vamos marcar as variáveis.
+/in=base1 =================================> Flag de identificação de quem estava na Base 1.
+/FILE='D:\Exemplo\inad_20050328_DOM.SAV' ======> Base 2: Base que contém variáveis que precisa ser maracada no Banco1.
+/in=base2 =================================> Flag de identificação de quem estava na Base 2.
+/FILE='D:\Exemplo\Mapa_Velox_07_03_05.sav'======> Base 3: Base que contém variáveis que precisa ser maracada no Banco1.
+/in=base3 =================================> Flag de identificação de quem estava na Base 3.
+/BY dom =================================> Se as 3 tiverem ordenadas por esta variável (comum nas 3 bases)
+/map ====================================> Serve para listar as variáveis dos bancos (1, 2 e 3).
+/keep dom ddd tel ina28mar mve_mar. ============> Variáveis selecionadas para o banco final (Base 1 marcada)
+EXECUTE.
+
+
+** PARA TRANSFORMAR LINHAS EM COLUNAS.
+
+sort cases by nrcass(A).
+
+CASESTOVARS
+ /ID = nrcass
+ /GROUPBY = INDEX.
+
+
+***PARA CRIAR O 1º NOME NO FORMATO DE MD.
+
+String pri_nome (A15).
+COMPUTE pri_nome = SUBSTR(nome,1,(INDEX(nome,' ')-1)).
+EXECUTE.
+
+***PARA TRANSFORMAR STRING EM NUMERICO. OBS: O PRIMEIRO NUM INDICA A POSIÇÃO(5) QUE O DDD E O SEGUNDO INDICA O TAMANDO(2) DO DDD.O F2.0 
+NESTE CASO INDICA O TAMANHO DO DDD APOS TRANSFORMADO PARA NUMERICO******
+
+COMPUTE DDD = NUMBER(SUBSTR(DDD_TEL,5,2),F2.0).
+EXE.
+COMPUTE TEL =  NUMBER(SUBSTR(DDD_TEL,8,8),F8.0).
+EXECUTE..
+
+***************************************************************************************************************************************
+COMPUTANDO VARIÁVEIS DO FORMATO TLMKT E OS DEIXANDO EM BRANCO OU PREENCHENDO-O COM "O".
+***************************************************************************************************************************************
+
+STRING NRCOP(A10).
+STRING ESTACAO (A5).
+STRING GRA (A5).
+STRING CENTRAL(A5).
+STRING DOC(A14).
+STRING TP_DOC(A4).
+STRING DIAS_ATR(A2).
+STRING G_PROP(A4).
+STRING OPERAD(A8).
+STRING SEG_DOM(A5).
+EXE.
+
+STRING DT_CARGA(A8).
+COMPUTE DT_CARGA = '20050919'.
+ EXECUTE .
+
+****************************************
+STRING NRCOP(A1).
+STRING DIAS_ATR(A1).
+COMPUTE NRCOP ='0'.
+COMPUTE DIAS_ATR = '0'.
+EXE.
+
+******************************************************************************************************************************************
+PARA CONTAR AS QDES!!
+**************************************************************************************************.
+
+COMPUTE COUNTER = 1.
+EXE.
+
+***************************************************
+PARA PEGAR AS PRIMEIRAS 3873 linhas.
+***************************************************
+
+compute count = $casenum.
+select if count <= 3873.
+exe.
+
+*************************************
+inserindo ponto virgula e 1 para carregar no listas.
+*******************************************************
+
+get file = 'G:\Disco_V\DBM\Demandas Ad-hoc Programa de Relacionamento\Aniversariantes\Móvel\NOVEMBRO_05\MD\Oi_Pos_doc_342474.sav'.
+
+string temp(A2).
+
+COMPUTE TEMP =";1".
+
+STRING DOC2 (A13).
+COMPUTE DOC2 = LTRIM(RTRIM(CONCAT(DOC, TEMP))).
+
+********Transforma variável string var1 em numérica sequencial *******.
+
+AUTORECODE VARIABLES= VAR1 /INTO=VAR2 /PRINT.
+EXE.
+
+
